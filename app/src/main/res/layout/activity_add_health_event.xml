@@ -26,7 +26,7 @@
             android:layout_marginTop="20dp"
             android:text="Event type"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <Spinner
             android:id="@+id/spinnerEventType"
@@ -36,13 +36,22 @@
             android:background="@color/card_white"
             android:padding="10dp" />
 
+        <EditText
+            android:id="@+id/etCustomEventType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Describe the event"
+            android:inputType="textCapSentences"
+            android:visibility="gone" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:text="Date"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnEventDate"
@@ -60,7 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:gravity="top"
-            android:hint="Notes (optional) — e.g. product used, dosage, observations"
+            android:hint="Notes (optional) â€” e.g. product used, dosage, observations"
             android:inputType="textMultiLine"
             android:minLines="3" />
 

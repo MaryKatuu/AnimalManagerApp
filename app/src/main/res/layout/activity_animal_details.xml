@@ -34,7 +34,7 @@
                 android:layout_marginTop="4dp"
                 android:textColor="@color/green_light"
                 android:textSize="14sp"
-                tools:text="Dairy cow - Friesian" />
+                tools:text="Dairy Cattle • Friesian" />
 
             <TextView
                 android:id="@+id/tvStatusBadge"
@@ -60,9 +60,18 @@
             android:padding="16dp">
 
             <TextView
+                android:id="@+id/tvQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                tools:text="Total number: 1" />
+
+            <TextView
                 android:id="@+id/tvDateAcquired"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 tools:text="Acquired: 01 Jul 2026" />
@@ -84,6 +93,37 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 tools:text="Age: 2 years" />
+
+            <TextView
+                android:id="@+id/tvPoultryInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/soil_brown"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="Currently laying: 40 | Trays collected: 12"
+                tools:visibility="visible" />
+
+            <Button
+                android:id="@+id/btnSoldAction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:backgroundTint="@color/amber_warning"
+                android:text="Mark as Sold"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btnUndoSold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:text="Undo sold status"
+                android:textColor="@color/red_overdue"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:layout_width="match_parent"

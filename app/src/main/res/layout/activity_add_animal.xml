@@ -19,21 +19,78 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Animal type"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <Spinner
+            android:id="@+id/spinnerAnimalType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@color/card_white"
+            android:padding="10dp" />
+
+        <EditText
+            android:id="@+id/etCustomAnimalType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Enter animal type (e.g. Emu, Guinea fowl)"
+            android:inputType="textCapWords"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/etVariety"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:hint="Variety / breed (e.g. Friesian, Kienyeji, Boer)"
+            android:inputType="textCapWords" />
+
+        <EditText
+            android:id="@+id/etQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:hint="Total number (e.g. 1 for a single animal, 50 for a batch)"
+            android:inputType="number" />
+
+        <LinearLayout
+            android:id="@+id/llPoultryFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/etLayingCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:hint="Number currently laying (optional)"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/etTraysCollected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:hint="Egg trays collected so far (optional)"
+                android:inputType="number" />
+        </LinearLayout>
+
         <EditText
             android:id="@+id/etTagNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:hint="Tag number (e.g. COW-014)"
-            android:inputType="textCapCharacters" />
-
-        <EditText
-            android:id="@+id/etTypeBreed"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:hint="Type / breed (e.g. Dairy cow - Friesian)"
-            android:inputType="textCapWords" />
+            android:hint="Tag number (digits only, e.g. 014)"
+            android:inputType="number" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,7 +98,7 @@
             android:layout_marginTop="14dp"
             android:text="Date acquired"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnDateAcquired"
@@ -59,7 +116,7 @@
             android:layout_marginTop="14dp"
             android:text="Sex"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <Spinner
             android:id="@+id/spinnerSex"

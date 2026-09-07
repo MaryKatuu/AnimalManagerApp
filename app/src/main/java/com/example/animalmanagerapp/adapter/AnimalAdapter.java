@@ -1,6 +1,7 @@
 package com.example.animalmanagerapp.adapter;
 
 import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +18,6 @@ import com.example.animalmanagerapp.model.HealthEvent;
 
 import java.util.List;
 
-/**
- * Binds a list of Animal objects to card rows, showing a colour-coded
- * status badge based on how long ago their most recent health/feeding
- * event was logged (or a neutral badge if none has been logged yet).
- */
 public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalViewHolder> {
 
     public interface OnAnimalClickListener {
@@ -46,16 +42,21 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
     @NonNull
     @Override
     public AnimalViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_animal, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_animal, parent, false);
         return new AnimalViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull AnimalViewHolder holder, int position) {
         Animal animal = animals.get(position);
-        holder.tvTagNumber.setText(animal.getTagNumber());
-        holder.tvTypeBreed.setText(animal.getTypeBreed());
+        holder.tvTagNumber.setText("Tag #" + animal.getTagNumber());
+
+        String typeLine = animal.getAnimalType();
+        if (!TextUtils.isEmpty(animal.getVariety())) {
+            typeLine += " • " + animal.getVariety();
+        }
+        holder.tvTypeBreed.setText(typeLine);
+        holder.tvQuantity.setText("Qty: " + (TextUtils.isEmpty(animal.getQuantity()) ? "1" : animal.getQuantity()));
 
         HealthEvent lastEvent = dbHelper.getMostRecentEvent(animal.getId());
         String badgeText;
@@ -64,7 +65,7 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
         if (lastEvent == null) {
             holder.tvLastEvent.setText("No events logged yet");
             badgeText = "New";
-            color = 0xFF9E9E9E; // grey
+            color = 0xFF9E9E9E;
         } else {
             holder.tvLastEvent.setText("Last: " + lastEvent.getEventType() + ", " +
                     DateUtils.toDisplayFormat(lastEvent.getEventDate()));
@@ -75,13 +76,13 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
                 color = 0xFF9E9E9E;
             } else if (daysSince <= 7) {
                 badgeText = daysSince + "d ago";
-                color = 0xFF2E7D32; // green - recently attended to
+                color = 0xFF1B5E20;
             } else if (daysSince <= 30) {
                 badgeText = daysSince + "d ago";
-                color = 0xFFF9A825; // amber
+                color = 0xFFE65100;
             } else {
                 badgeText = daysSince + "d ago";
-                color = 0xFFC62828; // red - overdue attention
+                color = 0xFFB71C1C;
             }
         }
 
@@ -100,12 +101,13 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
     }
 
     static class AnimalViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTagNumber, tvTypeBreed, tvLastEvent, tvStatusBadge;
+        TextView tvTagNumber, tvTypeBreed, tvQuantity, tvLastEvent, tvStatusBadge;
 
         AnimalViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTagNumber = itemView.findViewById(R.id.tvTagNumber);
             tvTypeBreed = itemView.findViewById(R.id.tvTypeBreed);
+            tvQuantity = itemView.findViewById(R.id.tvQuantity);
             tvLastEvent = itemView.findViewById(R.id.tvLastEvent);
             tvStatusBadge = itemView.findViewById(R.id.tvStatusBadge);
         }

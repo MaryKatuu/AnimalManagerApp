@@ -1,75 +1,64 @@
 package com.example.animalmanagerapp.model;
 
 /**
- * Represents a single animal record kept by the farmer.
+ * Represents a single animal record kept by the farmer — may represent
+ * one animal or a batch (e.g. a poultry batch), tracked via quantity.
  */
 public class Animal {
 
     private long id;
     private String tagNumber;
-    private String typeBreed;     // e.g. "Dairy cow - Friesian", "Goat", "Poultry batch"
+    private String animalType;    // e.g. "Dairy Cattle", "Poultry - Layers"
+    private String variety;       // breed, e.g. "Friesian", "Kienyeji"
+    private String quantity;      // total head count this record represents
     private String dateAcquired;  // stored as yyyy-MM-dd
-    private String sex;           // "Male" / "Female" / "Mixed" (for poultry batches)
-    private String age;           // free text, e.g. "2 years" or "6 weeks"
+    private String sex;
+    private String age;
+    private String layingCount;      // poultry only, optional
+    private String traysCollected;   // poultry only, optional
+    private boolean sold;
+    private String soldDate;      // stored as yyyy-MM-dd
+    private String saleAmount;    // free text numeric, e.g. "15000"
 
     public Animal() {
     }
 
-    public Animal(long id, String tagNumber, String typeBreed, String dateAcquired,
-                  String sex, String age) {
-        this.id = id;
-        this.tagNumber = tagNumber;
-        this.typeBreed = typeBreed;
-        this.dateAcquired = dateAcquired;
-        this.sex = sex;
-        this.age = age;
-    }
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
 
-    public long getId() {
-        return id;
-    }
+    public String getTagNumber() { return tagNumber; }
+    public void setTagNumber(String tagNumber) { this.tagNumber = tagNumber; }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+    public String getAnimalType() { return animalType; }
+    public void setAnimalType(String animalType) { this.animalType = animalType; }
 
-    public String getTagNumber() {
-        return tagNumber;
-    }
+    public String getVariety() { return variety; }
+    public void setVariety(String variety) { this.variety = variety; }
 
-    public void setTagNumber(String tagNumber) {
-        this.tagNumber = tagNumber;
-    }
+    public String getQuantity() { return quantity; }
+    public void setQuantity(String quantity) { this.quantity = quantity; }
 
-    public String getTypeBreed() {
-        return typeBreed;
-    }
+    public String getDateAcquired() { return dateAcquired; }
+    public void setDateAcquired(String dateAcquired) { this.dateAcquired = dateAcquired; }
 
-    public void setTypeBreed(String typeBreed) {
-        this.typeBreed = typeBreed;
-    }
+    public String getSex() { return sex; }
+    public void setSex(String sex) { this.sex = sex; }
 
-    public String getDateAcquired() {
-        return dateAcquired;
-    }
+    public String getAge() { return age; }
+    public void setAge(String age) { this.age = age; }
 
-    public void setDateAcquired(String dateAcquired) {
-        this.dateAcquired = dateAcquired;
-    }
+    public String getLayingCount() { return layingCount; }
+    public void setLayingCount(String layingCount) { this.layingCount = layingCount; }
 
-    public String getSex() {
-        return sex;
-    }
+    public String getTraysCollected() { return traysCollected; }
+    public void setTraysCollected(String traysCollected) { this.traysCollected = traysCollected; }
 
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
+    public boolean isSold() { return sold; }
+    public void setSold(boolean sold) { this.sold = sold; }
 
-    public String getAge() {
-        return age;
-    }
+    public String getSoldDate() { return soldDate; }
+    public void setSoldDate(String soldDate) { this.soldDate = soldDate; }
 
-    public void setAge(String age) {
-        this.age = age;
-    }
+    public String getSaleAmount() { return saleAmount; }
+    public void setSaleAmount(String saleAmount) { this.saleAmount = saleAmount; }
 }

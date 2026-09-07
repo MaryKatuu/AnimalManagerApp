@@ -2,6 +2,9 @@ package com.example.animalmanagerapp;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.animalmanagerapp.db.DatabaseHelper;
 import com.example.animalmanagerapp.db.DateUtils;
+import com.example.animalmanagerapp.db.ValidationUtils;
 import com.example.animalmanagerapp.model.Animal;
 import com.example.animalmanagerapp.model.HealthEvent;
 
@@ -20,13 +24,16 @@ import java.util.Calendar;
 
 /**
  * Logs a single health/feeding event (vaccination, deworming, feeding
- * schedule, treatment, etc.) against the animal the user came from.
+ * schedule, treatment, etc.) against the animal the user came from, with
+ * a custom entry option when the type isn't in the suggested list.
  */
 public class AddHealthEventActivity extends AppCompatActivity {
 
+    private static final String OTHER_OPTION = "Other";
+
     private Spinner spinnerEventType;
+    private EditText etCustomEventType, etNotes;
     private Button btnEventDate, btnSaveEvent;
-    private EditText etNotes;
     private TextView tvFormTitle;
 
     private String eventDateIso = null;
@@ -42,6 +49,7 @@ public class AddHealthEventActivity extends AppCompatActivity {
         animalId = getIntent().getLongExtra("animal_id", -1);
 
         spinnerEventType = findViewById(R.id.spinnerEventType);
+        etCustomEventType = findViewById(R.id.etCustomEventType);
         btnEventDate = findViewById(R.id.btnEventDate);
         btnSaveEvent = findViewById(R.id.btnSaveEvent);
         etNotes = findViewById(R.id.etNotes);
@@ -52,9 +60,20 @@ public class AddHealthEventActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEventType.setAdapter(adapter);
 
+        spinnerEventType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                boolean isOther = OTHER_OPTION.equals(spinnerEventType.getSelectedItem().toString());
+                etCustomEventType.setVisibility(isOther ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
         Animal animal = dbHelper.getAnimal(animalId);
         if (animal != null) {
-            tvFormTitle.setText("Log Event — " + animal.getTagNumber());
+            tvFormTitle.setText("Log Event â€” " + animal.getTagNumber());
         }
 
         btnEventDate.setOnClickListener(v -> showDatePicker());
@@ -68,9 +87,7 @@ public class AddHealthEventActivity extends AppCompatActivity {
                     eventDateIso = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
                     btnEventDate.setText(DateUtils.toDisplayFormat(eventDateIso));
                 },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH));
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         dialog.show();
     }
 
@@ -84,7 +101,25 @@ public class AddHealthEventActivity extends AppCompatActivity {
             return;
         }
 
-        String eventType = spinnerEventType.getSelectedItem().toString();
+        String selectedType = spinnerEventType.getSelectedItem().toString();
+        String eventType;
+
+        if (OTHER_OPTION.equals(selectedType)) {
+            eventType = etCustomEventType.getText().toString().trim();
+            if (TextUtils.isEmpty(eventType)) {
+                etCustomEventType.setError("Please describe the event");
+                etCustomEventType.requestFocus();
+                return;
+            }
+            if (!ValidationUtils.containsLetter(eventType)) {
+                etCustomEventType.setError("Event must include letters, not just numbers");
+                etCustomEventType.requestFocus();
+                return;
+            }
+        } else {
+            eventType = selectedType;
+        }
+
         String notes = etNotes.getText().toString().trim();
 
         HealthEvent event = new HealthEvent();

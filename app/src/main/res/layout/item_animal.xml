@@ -35,8 +35,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                tools:text="Dairy Cattle • Friesian" />
+
+            <TextView
+                android:id="@+id/tvQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/soil_brown"
                 android:textSize="13sp"
-                tools:text="Dairy cow - Friesian" />
+                android:textStyle="bold"
+                tools:text="Qty: 1" />
 
             <TextView
                 android:id="@+id/tvLastEvent"
