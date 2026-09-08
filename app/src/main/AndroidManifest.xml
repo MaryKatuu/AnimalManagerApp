@@ -32,6 +32,10 @@
         <activity android:name=".AddHealthEventActivity" android:exported="false" />
         <activity android:name=".ArchiveActivity" android:exported="false" />
 
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".YieldsActivity" android:exported="false" />
+        <activity android:name=".AddOutputActivity" android:exported="false" />
+
 
     </application>
 

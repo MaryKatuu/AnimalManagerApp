@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.animalmanagerapp.adapter.HealthEventAdapter;
+import com.example.animalmanagerapp.adapter.OutputAdapter;
+import com.example.animalmanagerapp.model.OutputLog;
 import com.example.animalmanagerapp.db.DatabaseHelper;
 import com.example.animalmanagerapp.db.DateUtils;
 import com.example.animalmanagerapp.model.Animal;
@@ -35,8 +37,9 @@ public class AnimalDetailsActivity extends AppCompatActivity {
     private TextView tvTagNumber, tvTypeBreed, tvStatusBadge, tvQuantity, tvDateAcquired,
             tvSex, tvAge, tvPoultryInfo, tvNoEvents;
     private Button btnSoldAction, btnUndoSold;
-    private RecyclerView rvEvents;
+    private RecyclerView rvEvents, rvOutput;
     private HealthEventAdapter eventAdapter;
+    private OutputAdapter outputAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +59,10 @@ public class AnimalDetailsActivity extends AppCompatActivity {
         tvPoultryInfo = findViewById(R.id.tvPoultryInfo);
         tvNoEvents = findViewById(R.id.tvNoEvents);
         rvEvents = findViewById(R.id.rvEvents);
+        rvOutput = findViewById(R.id.rvOutput);
 
         Button btnEditAnimal = findViewById(R.id.btnEditAnimal);
+        Button btnAddOutput = findViewById(R.id.btnAddOutput);
         Button btnDeleteAnimal = findViewById(R.id.btnDeleteAnimal);
         Button btnAddEvent = findViewById(R.id.btnAddEvent);
         btnSoldAction = findViewById(R.id.btnSoldAction);
@@ -66,6 +71,10 @@ public class AnimalDetailsActivity extends AppCompatActivity {
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter = new HealthEventAdapter(new java.util.ArrayList<>());
         rvEvents.setAdapter(eventAdapter);
+
+        rvOutput.setLayoutManager(new LinearLayoutManager(this));
+        outputAdapter = new OutputAdapter(new java.util.ArrayList<>());
+        rvOutput.setAdapter(outputAdapter);
 
         btnEditAnimal.setOnClickListener(v -> {
             Intent intent = new Intent(AnimalDetailsActivity.this, EditAnimalActivity.class);
@@ -81,6 +90,12 @@ public class AnimalDetailsActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        btnAddOutput.setOnClickListener(v -> {
+            Intent intent = new Intent(AnimalDetailsActivity.this, AddOutputActivity.class);
+            intent.putExtra("animal_id", animalId);
+            startActivity(intent);
+        });
+
         btnSoldAction.setOnClickListener(v -> showSoldDialog());
         btnUndoSold.setOnClickListener(v -> confirmUndoSold());
     }
@@ -90,6 +105,7 @@ public class AnimalDetailsActivity extends AppCompatActivity {
         super.onResume();
         loadAnimalDetails();
         loadEvents();
+        loadOutput();
     }
 
     private void loadAnimalDetails() {
@@ -170,6 +186,22 @@ public class AnimalDetailsActivity extends AppCompatActivity {
         } else {
             tvNoEvents.setVisibility(View.GONE);
             rvEvents.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    private void loadOutput() {
+        List<OutputLog> outputLogs = dbHelper.getOutputLogsForAnimal(animalId);
+        outputAdapter.updateData(outputLogs);
+
+        TextView tvNoOutput = findViewById(R.id.tvNoOutput);
+        RecyclerView rvOutputView = findViewById(R.id.rvOutput);
+        if (outputLogs.isEmpty()) {
+            tvNoOutput.setVisibility(View.VISIBLE);
+            rvOutputView.setVisibility(View.GONE);
+        } else {
+            tvNoOutput.setVisibility(View.GONE);
+            rvOutputView.setVisibility(View.VISIBLE);
         }
     }
 

@@ -5,27 +5,23 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
 
 import com.example.animalmanagerapp.model.Animal;
 import com.example.animalmanagerapp.model.HealthEvent;
+import com.example.animalmanagerapp.model.OutputLog;
 import com.example.animalmanagerapp.model.User;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * Central SQLite access point. Handles table creation/upgrades and all
- * CRUD operations for accounts, animals, and health/feeding events,
- * including livestock type/variety/quantity, poultry fields, and the
- * sold/archive workflow.
- */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "animal_manager.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     public static final String TABLE_ANIMALS = "animals";
     public static final String COL_ANIMAL_ID = "id";
@@ -60,6 +56,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SECURITY_ANSWER_SALT = "security_answer_salt";
     public static final String COL_RECOVERY_CODE_HASH = "recovery_code_hash";
     public static final String COL_RECOVERY_CODE_SALT = "recovery_code_salt";
+
+    public static final String TABLE_OUTPUT = "output_logs";
+    public static final String COL_OUTPUT_ID = "id";
+    public static final String COL_OUTPUT_ANIMAL_ID = "animal_id";
+    public static final String COL_OUTPUT_DATE = "output_date";
+    public static final String COL_OUTPUT_QUANTITY = "quantity";
+    public static final String COL_OUTPUT_UNIT = "unit";
+    public static final String COL_OUTPUT_NOTES = "notes";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -105,6 +109,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_RECOVERY_CODE_HASH + " TEXT NOT NULL, " +
                 COL_RECOVERY_CODE_SALT + " TEXT NOT NULL" +
                 ");");
+
+        db.execSQL("CREATE TABLE " + TABLE_OUTPUT + " (" +
+                COL_OUTPUT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_OUTPUT_ANIMAL_ID + " INTEGER NOT NULL, " +
+                COL_OUTPUT_DATE + " TEXT NOT NULL, " +
+                COL_OUTPUT_QUANTITY + " TEXT NOT NULL, " +
+                COL_OUTPUT_UNIT + " TEXT, " +
+                COL_OUTPUT_NOTES + " TEXT, " +
+                "FOREIGN KEY(" + COL_OUTPUT_ANIMAL_ID + ") REFERENCES " +
+                TABLE_ANIMALS + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE" +
+                ");");
     }
 
     @Override
@@ -132,6 +147,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COL_RECOVERY_CODE_SALT + " TEXT NOT NULL" +
                     ");");
         }
+        if (oldVersion < 4) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_OUTPUT + " (" +
+                    COL_OUTPUT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_OUTPUT_ANIMAL_ID + " INTEGER NOT NULL, " +
+                    COL_OUTPUT_DATE + " TEXT NOT NULL, " +
+                    COL_OUTPUT_QUANTITY + " TEXT NOT NULL, " +
+                    COL_OUTPUT_UNIT + " TEXT, " +
+                    COL_OUTPUT_NOTES + " TEXT" +
+                    ");");
+        }
     }
 
     @Override
@@ -146,7 +171,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_USERNAME, user.getUsername());
-        values.put(COL_EMAIL, TextUtils.isEmpty(user.getEmail()) ? null : user.getEmail());
+        values.put(COL_EMAIL, isEmpty(user.getEmail()) ? null : user.getEmail());
         values.put(COL_PASSWORD_HASH, user.getPasswordHash());
         values.put(COL_PASSWORD_SALT, user.getPasswordSalt());
         values.put(COL_SECURITY_QUESTION, user.getSecurityQuestion());
@@ -154,7 +179,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_SECURITY_ANSWER_SALT, user.getSecurityAnswerSalt());
         values.put(COL_RECOVERY_CODE_HASH, user.getRecoveryCodeHash());
         values.put(COL_RECOVERY_CODE_SALT, user.getRecoveryCodeSalt());
-        long id = db.insert(TABLE_USERS, null, values);
+        long id = db.insertWithOnConflict(TABLE_USERS, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         db.close();
         return id;
     }
@@ -170,7 +195,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean emailExists(String email) {
-        if (TextUtils.isEmpty(email)) return false;
+        if (isEmpty(email)) return false;
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_USERS, new String[]{COL_USER_ID},
                 "LOWER(" + COL_EMAIL + ") = LOWER(?)", new String[]{email}, null, null, null);
@@ -180,16 +205,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    /** Looks up a user by username OR email, case-insensitive. */
     public User getUserByIdentifier(String identifier) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_USERS, null,
                 "LOWER(" + COL_USERNAME + ") = LOWER(?) OR LOWER(" + COL_EMAIL + ") = LOWER(?)",
                 new String[]{identifier, identifier}, null, null, null);
         User user = null;
-        if (cursor.moveToFirst()) {
-            user = cursorToUser(cursor);
-        }
+        if (cursor.moveToFirst()) user = cursorToUser(cursor);
         cursor.close();
         db.close();
         return user;
@@ -280,6 +302,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void deleteAnimal(long animalId) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(TABLE_EVENTS, COL_EVENT_ANIMAL_ID + " = ?", new String[]{String.valueOf(animalId)});
+        db.delete(TABLE_OUTPUT, COL_OUTPUT_ANIMAL_ID + " = ?", new String[]{String.valueOf(animalId)});
         db.delete(TABLE_ANIMALS, COL_ANIMAL_ID + " = ?", new String[]{String.valueOf(animalId)});
         db.close();
     }
@@ -360,6 +383,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.isNull(idx) ? "" : cursor.getString(idx);
     }
 
+    private boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     // ---------------- HEALTH / FEEDING EVENT CRUD ----------------
 
     public long addEvent(HealthEvent event) {
@@ -412,6 +439,72 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(TABLE_EVENTS, COL_EVENT_ID + " = ?", new String[]{String.valueOf(eventId)});
         db.close();
+    }
+
+    // ---------------- OUTPUT LOG CRUD ----------------
+
+    public long addOutputLog(OutputLog log) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_OUTPUT_ANIMAL_ID, log.getAnimalId());
+        values.put(COL_OUTPUT_DATE, log.getOutputDate());
+        values.put(COL_OUTPUT_QUANTITY, log.getQuantity());
+        values.put(COL_OUTPUT_UNIT, log.getUnit());
+        values.put(COL_OUTPUT_NOTES, log.getNotes());
+        long id = db.insert(TABLE_OUTPUT, null, values);
+        db.close();
+        return id;
+    }
+
+    public List<OutputLog> getOutputLogsForAnimal(long animalId) {
+        List<OutputLog> logs = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_OUTPUT, null, COL_OUTPUT_ANIMAL_ID + " = ?",
+                new String[]{String.valueOf(animalId)}, null, null, COL_OUTPUT_DATE + " DESC");
+        if (cursor.moveToFirst()) {
+            do { logs.add(cursorToOutput(cursor)); } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return logs;
+    }
+
+    /** All output logs across every animal (active or sold), oldest first — used for the Yields chart. */
+    public List<OutputLog> getAllOutputLogs() {
+        List<OutputLog> logs = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_OUTPUT, null, null, null, null, null, COL_OUTPUT_DATE + " ASC");
+        if (cursor.moveToFirst()) {
+            do { logs.add(cursorToOutput(cursor)); } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return logs;
+    }
+
+    private OutputLog cursorToOutput(Cursor cursor) {
+        OutputLog log = new OutputLog();
+        log.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_OUTPUT_ID)));
+        log.setAnimalId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_OUTPUT_ANIMAL_ID)));
+        log.setOutputDate(cursor.getString(cursor.getColumnIndexOrThrow(COL_OUTPUT_DATE)));
+        log.setQuantity(cursor.getString(cursor.getColumnIndexOrThrow(COL_OUTPUT_QUANTITY)));
+        log.setUnit(safeString(cursor, COL_OUTPUT_UNIT));
+        log.setNotes(safeString(cursor, COL_OUTPUT_NOTES));
+        return log;
+    }
+
+    public void deleteOutputLog(long outputId) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(TABLE_OUTPUT, COL_OUTPUT_ID + " = ?", new String[]{String.valueOf(outputId)});
+        db.close();
+    }
+
+    /** Distinct animal types across both active and sold animals — used to filter the Yields chart. */
+    public List<String> getDistinctAnimalTypes() {
+        Set<String> types = new LinkedHashSet<>();
+        for (Animal animal : getAllAnimals(null)) types.add(animal.getAnimalType());
+        for (Animal animal : getSoldAnimals(null)) types.add(animal.getAnimalType());
+        return new ArrayList<>(types);
     }
 
     // ---------------- SUMMARY QUERIES ----------------

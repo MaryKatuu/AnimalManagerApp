@@ -43,4 +43,13 @@
         <item>What is the name of your primary school?</item>
         <item>What is your favorite crop or animal to raise?</item>
     </string-array>
+
+    <string-array name="output_units">
+        <item>Eggs</item>
+        <item>Trays</item>
+        <item>Litres (Milk)</item>
+        <item>Kg</item>
+        <item>Pieces</item>
+        <item>Other</item>
+    </string-array>
 </resources>

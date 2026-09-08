@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import com.example.animalmanagerapp.adapter.AnimalAdapter;
 import com.example.animalmanagerapp.db.DatabaseHelper;
 import com.example.animalmanagerapp.model.Animal;
@@ -60,6 +62,9 @@ public class AnimalListActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {}
         });
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        BottomNavHelper.setup(bottomNav, this, R.id.nav_animals);
     }
 
     @Override

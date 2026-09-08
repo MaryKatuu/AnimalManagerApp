@@ -1,7 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.AnimalManagerApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Theme.AnimalManagerApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/green_primary</item>
+        <item name="colorPrimaryDark">@color/green_dark</item>
+        <item name="colorAccent">@color/amber_warning</item>
+        <item name="android:windowBackground">@color/background_light</item>
+        <item name="android:statusBarColor" tools:targetApi="21">@color/green_dark</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
     </style>
 </resources>
