@@ -27,22 +27,48 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
-        <Spinner
-            android:id="@+id/spinnerAnimalType"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSelectType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@color/card_white"
-            android:padding="10dp" />
+            android:layout_marginTop="6dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp">
 
-        <EditText
-            android:id="@+id/etCustomAnimalType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:hint="Enter animal type (e.g. Emu, Guinea fowl)"
-            android:inputType="textCapWords"
-            android:visibility="gone" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:id="@+id/ivSelectedTypeImage"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:contentDescription="Selected animal type"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_cat_other_animal" />
+
+                <TextView
+                    android:id="@+id/tvSelectedTypeName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Tap to choose an animal type"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="20sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <EditText
             android:id="@+id/etVariety"

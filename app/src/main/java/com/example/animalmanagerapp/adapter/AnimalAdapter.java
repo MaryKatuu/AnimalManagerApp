@@ -11,12 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.animalmanagerapp.R;
+import com.example.animalmanagerapp.catalog.AnimalImageResolver;
 import com.example.animalmanagerapp.db.DatabaseHelper;
 import com.example.animalmanagerapp.db.DateUtils;
 import com.example.animalmanagerapp.model.Animal;
 import com.example.animalmanagerapp.model.HealthEvent;
 
 import java.util.List;
+import android.text.TextUtils;
+import android.widget.ImageView;
 
 public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalViewHolder> {
 
@@ -50,6 +53,10 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
     public void onBindViewHolder(@NonNull AnimalViewHolder holder, int position) {
         Animal animal = animals.get(position);
         holder.tvTagNumber.setText("Tag #" + animal.getTagNumber());
+
+        String overrideImage = dbHelper.getAnimalTypeImage(animal.getAnimalType());
+        AnimalImageResolver.applyAnimalImage(holder.ivAnimalThumbnail, holder.itemView.getContext(),
+                animal.getAnimalType(), overrideImage);
 
         String typeLine = animal.getAnimalType();
         if (!TextUtils.isEmpty(animal.getVariety())) {
@@ -101,10 +108,12 @@ public class AnimalAdapter extends RecyclerView.Adapter<AnimalAdapter.AnimalView
     }
 
     static class AnimalViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivAnimalThumbnail;
         TextView tvTagNumber, tvTypeBreed, tvQuantity, tvLastEvent, tvStatusBadge;
 
         AnimalViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivAnimalThumbnail = itemView.findViewById(R.id.ivAnimalThumbnail);
             tvTagNumber = itemView.findViewById(R.id.tvTagNumber);
             tvTypeBreed = itemView.findViewById(R.id.tvTypeBreed);
             tvQuantity = itemView.findViewById(R.id.tvQuantity);

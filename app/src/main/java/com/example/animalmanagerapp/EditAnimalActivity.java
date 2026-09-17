@@ -1,21 +1,24 @@
 package com.example.animalmanagerapp;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
+import com.example.animalmanagerapp.catalog.AnimalCatalog;
+import com.example.animalmanagerapp.catalog.AnimalImageResolver;
 import com.example.animalmanagerapp.db.DatabaseHelper;
 import com.example.animalmanagerapp.db.DateUtils;
 import com.example.animalmanagerapp.db.ValidationUtils;
@@ -25,14 +28,17 @@ import java.util.Calendar;
 
 public class EditAnimalActivity extends AppCompatActivity {
 
-    private static final String OTHER_OPTION = "Other (specify)";
+    private static final int REQUEST_BROWSE_ANIMALS = 200;
 
-    private Spinner spinnerAnimalType, spinnerSex;
-    private EditText etCustomAnimalType, etVariety, etQuantity, etLayingCount, etTraysCollected,
-            etTagNumber, etAge;
+    private CardView cardSelectType;
+    private ImageView ivSelectedTypeImage;
+    private TextView tvSelectedTypeName;
+    private Spinner spinnerSex;
+    private EditText etVariety, etQuantity, etLayingCount, etTraysCollected, etTagNumber, etAge;
     private LinearLayout llPoultryFields;
     private Button btnDateAcquired, btnUpdateAnimal;
 
+    private String selectedAnimalType = null;
     private String dateAcquiredIso = null;
     private DatabaseHelper dbHelper;
     private long animalId;
@@ -46,9 +52,10 @@ public class EditAnimalActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
         animalId = getIntent().getLongExtra("animal_id", -1);
 
-        spinnerAnimalType = findViewById(R.id.spinnerAnimalType);
+        cardSelectType = findViewById(R.id.cardSelectType);
+        ivSelectedTypeImage = findViewById(R.id.ivSelectedTypeImage);
+        tvSelectedTypeName = findViewById(R.id.tvSelectedTypeName);
         spinnerSex = findViewById(R.id.spinnerSex);
-        etCustomAnimalType = findViewById(R.id.etCustomAnimalType);
         etVariety = findViewById(R.id.etVariety);
         etQuantity = findViewById(R.id.etQuantity);
         etLayingCount = findViewById(R.id.etLayingCount);
@@ -59,40 +66,10 @@ public class EditAnimalActivity extends AppCompatActivity {
         btnDateAcquired = findViewById(R.id.btnDateAcquired);
         btnUpdateAnimal = findViewById(R.id.btnUpdateAnimal);
 
-        ArrayAdapter<CharSequence> typeAdapter = ArrayAdapter.createFromResource(this,
-                R.array.animal_types, android.R.layout.simple_spinner_item);
-        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerAnimalType.setAdapter(typeAdapter);
-
         ArrayAdapter<CharSequence> sexAdapter = ArrayAdapter.createFromResource(this,
                 R.array.sex_options, android.R.layout.simple_spinner_item);
         sexAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSex.setAdapter(sexAdapter);
-
-        spinnerAnimalType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = spinnerAnimalType.getSelectedItem().toString();
-                etCustomAnimalType.setVisibility(OTHER_OPTION.equals(selected) ? View.VISIBLE : View.GONE);
-                updatePoultryFieldsVisibility();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
-
-        etCustomAnimalType.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updatePoultryFieldsVisibility();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) { }
-        });
 
         existingAnimal = dbHelper.getAnimal(animalId);
         if (existingAnimal == null) {
@@ -103,34 +80,19 @@ public class EditAnimalActivity extends AppCompatActivity {
 
         populateFields();
 
+        cardSelectType.setOnClickListener(v ->
+                startActivityForResult(new Intent(EditAnimalActivity.this, BrowseAnimalsActivity.class), REQUEST_BROWSE_ANIMALS));
+
         btnDateAcquired.setOnClickListener(v -> showDatePicker());
         btnUpdateAnimal.setOnClickListener(v -> updateAnimal());
     }
 
-    private void updatePoultryFieldsVisibility() {
-        String selected = spinnerAnimalType.getSelectedItem() != null
-                ? spinnerAnimalType.getSelectedItem().toString() : "";
-        String relevant = OTHER_OPTION.equals(selected) ? etCustomAnimalType.getText().toString() : selected;
-        llPoultryFields.setVisibility(ValidationUtils.isPoultryRelated(relevant) ? View.VISIBLE : View.GONE);
-    }
-
     private void populateFields() {
-        String[] types = getResources().getStringArray(R.array.animal_types);
-        int matchIndex = -1;
-        for (int i = 0; i < types.length; i++) {
-            if (types[i].equalsIgnoreCase(existingAnimal.getAnimalType())) {
-                matchIndex = i;
-                break;
-            }
-        }
-        if (matchIndex >= 0) {
-            spinnerAnimalType.setSelection(matchIndex);
-            etCustomAnimalType.setVisibility(View.GONE);
-        } else {
-            spinnerAnimalType.setSelection(types.length - 1);
-            etCustomAnimalType.setVisibility(View.VISIBLE);
-            etCustomAnimalType.setText(existingAnimal.getAnimalType());
-        }
+        selectedAnimalType = existingAnimal.getAnimalType();
+        tvSelectedTypeName.setText(selectedAnimalType);
+        tvSelectedTypeName.setTextColor(getResources().getColor(R.color.text_primary));
+        String overrideImage = dbHelper.getAnimalTypeImage(selectedAnimalType);
+        AnimalImageResolver.applyAnimalImage(ivSelectedTypeImage, this, selectedAnimalType, overrideImage);
 
         etVariety.setText(existingAnimal.getVariety());
         etQuantity.setText(existingAnimal.getQuantity());
@@ -153,6 +115,24 @@ public class EditAnimalActivity extends AppCompatActivity {
         btnDateAcquired.setText(DateUtils.toDisplayFormat(dateAcquiredIso));
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_BROWSE_ANIMALS && resultCode == RESULT_OK && data != null) {
+            selectedAnimalType = data.getStringExtra(BrowseAnimalsActivity.EXTRA_TYPE_NAME);
+            tvSelectedTypeName.setText(selectedAnimalType);
+            String overrideImage = dbHelper.getAnimalTypeImage(selectedAnimalType);
+            AnimalImageResolver.applyAnimalImage(ivSelectedTypeImage, this, selectedAnimalType, overrideImage);
+            updatePoultryFieldsVisibility();
+        }
+    }
+
+    private void updatePoultryFieldsVisibility() {
+        boolean isPoultry = selectedAnimalType != null
+                && AnimalCatalog.CATEGORY_POULTRY.equals(AnimalCatalog.categorize(selectedAnimalType));
+        llPoultryFields.setVisibility(isPoultry ? View.VISIBLE : View.GONE);
+    }
+
     private void showDatePicker() {
         Calendar calendar = Calendar.getInstance();
         if (DateUtils.isValidIsoDate(dateAcquiredIso)) {
@@ -170,23 +150,9 @@ public class EditAnimalActivity extends AppCompatActivity {
     }
 
     private void updateAnimal() {
-        String selectedType = spinnerAnimalType.getSelectedItem().toString();
-        String animalType;
-
-        if (OTHER_OPTION.equals(selectedType)) {
-            animalType = etCustomAnimalType.getText().toString().trim();
-            if (TextUtils.isEmpty(animalType)) {
-                etCustomAnimalType.setError("Please enter the animal type");
-                etCustomAnimalType.requestFocus();
-                return;
-            }
-            if (!ValidationUtils.containsLetter(animalType)) {
-                etCustomAnimalType.setError("Animal type must include letters, not just numbers");
-                etCustomAnimalType.requestFocus();
-                return;
-            }
-        } else {
-            animalType = selectedType;
+        if (TextUtils.isEmpty(selectedAnimalType)) {
+            Toast.makeText(this, "Please select an animal type", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         String variety = etVariety.getText().toString().trim();
@@ -259,7 +225,7 @@ public class EditAnimalActivity extends AppCompatActivity {
         }
 
         existingAnimal.setTagNumber(tagNumber);
-        existingAnimal.setAnimalType(animalType);
+        existingAnimal.setAnimalType(selectedAnimalType);
         existingAnimal.setVariety(variety);
         existingAnimal.setQuantity(quantity);
         existingAnimal.setDateAcquired(dateAcquiredIso);

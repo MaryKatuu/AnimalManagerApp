@@ -36,6 +36,9 @@
         <activity android:name=".YieldsActivity" android:exported="false" />
         <activity android:name=".AddOutputActivity" android:exported="false" />
 
+        <activity android:name=".BrowseAnimalsActivity" android:exported="false" />
+        <activity android:name=".AddCustomAnimalTypeActivity" android:exported="false" />
+
 
     </application>
 

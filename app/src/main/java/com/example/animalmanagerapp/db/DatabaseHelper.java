@@ -11,6 +11,9 @@ import com.example.animalmanagerapp.model.HealthEvent;
 import com.example.animalmanagerapp.model.OutputLog;
 import com.example.animalmanagerapp.model.User;
 
+import java.util.HashSet;
+
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -21,7 +24,7 @@ import java.util.Set;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "animal_manager.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     public static final String TABLE_ANIMALS = "animals";
     public static final String COL_ANIMAL_ID = "id";
@@ -64,6 +67,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_OUTPUT_QUANTITY = "quantity";
     public static final String COL_OUTPUT_UNIT = "unit";
     public static final String COL_OUTPUT_NOTES = "notes";
+
+
+    public static final String TABLE_TYPE_IMAGES = "animal_type_images";
+    public static final String COL_TYPE_IMAGE_TYPE_NAME = "type_name";
+    public static final String COL_TYPE_IMAGE_PATH = "image_path";
+
+    public static final String TABLE_HIDDEN_TYPES = "hidden_animal_types";
+    public static final String COL_HIDDEN_TYPE_NAME = "type_name";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -120,6 +131,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(" + COL_OUTPUT_ANIMAL_ID + ") REFERENCES " +
                 TABLE_ANIMALS + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE" +
                 ");");
+
+
+        db.execSQL("CREATE TABLE " + TABLE_TYPE_IMAGES + " (" +
+                COL_TYPE_IMAGE_TYPE_NAME + " TEXT PRIMARY KEY, " +
+                COL_TYPE_IMAGE_PATH + " TEXT NOT NULL" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + TABLE_HIDDEN_TYPES + " (" +
+                COL_HIDDEN_TYPE_NAME + " TEXT PRIMARY KEY" +
+                ");");
     }
 
     @Override
@@ -155,6 +176,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COL_OUTPUT_QUANTITY + " TEXT NOT NULL, " +
                     COL_OUTPUT_UNIT + " TEXT, " +
                     COL_OUTPUT_NOTES + " TEXT" +
+                    ");");
+        }
+
+        if (oldVersion < 5) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_TYPE_IMAGES + " (" +
+                    COL_TYPE_IMAGE_TYPE_NAME + " TEXT PRIMARY KEY, " +
+                    COL_TYPE_IMAGE_PATH + " TEXT NOT NULL" +
+                    ");");
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_HIDDEN_TYPES + " (" +
+                    COL_HIDDEN_TYPE_NAME + " TEXT PRIMARY KEY" +
                     ");");
         }
     }
@@ -239,6 +270,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         user.setRecoveryCodeHash(cursor.getString(cursor.getColumnIndexOrThrow(COL_RECOVERY_CODE_HASH)));
         user.setRecoveryCodeSalt(cursor.getString(cursor.getColumnIndexOrThrow(COL_RECOVERY_CODE_SALT)));
         return user;
+    }
+
+    // ---------------- ANIMAL TYPE IMAGE OVERRIDES ----------------
+
+    public void setAnimalTypeImage(String typeName, String imagePath) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_TYPE_IMAGE_TYPE_NAME, typeName);
+        values.put(COL_TYPE_IMAGE_PATH, imagePath);
+        db.insertWithOnConflict(TABLE_TYPE_IMAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+    }
+
+    public String getAnimalTypeImage(String typeName) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_TYPE_IMAGES, null, COL_TYPE_IMAGE_TYPE_NAME + " = ?",
+                new String[]{typeName}, null, null, null);
+        String path = null;
+        if (cursor.moveToFirst()) {
+            path = cursor.getString(cursor.getColumnIndexOrThrow(COL_TYPE_IMAGE_PATH));
+        }
+        cursor.close();
+        db.close();
+        return path;
+    }
+
+    // ---------------- HIDDEN ANIMAL TYPES ----------------
+
+    public void hideAnimalType(String typeName) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_HIDDEN_TYPE_NAME, typeName);
+        db.insertWithOnConflict(TABLE_HIDDEN_TYPES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+    }
+
+    public Set<String> getHiddenAnimalTypes() {
+        Set<String> hidden = new HashSet<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_HIDDEN_TYPES, null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                hidden.add(cursor.getString(cursor.getColumnIndexOrThrow(COL_HIDDEN_TYPE_NAME)));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return hidden;
     }
 
     // ---------------- ANIMAL CRUD ----------------
@@ -579,4 +658,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return result;
     }
+
+
 }
