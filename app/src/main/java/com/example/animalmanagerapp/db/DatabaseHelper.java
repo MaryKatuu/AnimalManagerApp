@@ -283,6 +283,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /** All animals (active + sold) of a given type — used to compare individuals in the Yields screen. */
+    public List<Animal> getAnimalsByType(String type) {
+        List<Animal> result = new ArrayList<>();
+        for (Animal animal : getAllAnimals(null)) {
+            if (animal.getAnimalType().equals(type)) result.add(animal);
+        }
+        for (Animal animal : getSoldAnimals(null)) {
+            if (animal.getAnimalType().equals(type)) result.add(animal);
+        }
+        return result;
+    }
+
     public String getAnimalTypeImage(String typeName) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_TYPE_IMAGES, null, COL_TYPE_IMAGE_TYPE_NAME + " = ?",

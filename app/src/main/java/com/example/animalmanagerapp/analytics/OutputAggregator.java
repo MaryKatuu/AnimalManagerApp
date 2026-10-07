@@ -45,6 +45,30 @@ public class OutputAggregator {
         return buckets;
     }
 
+
+    public static Map<String, Float> getYearlyTotals(List<OutputLog> logs, int yearsBack) {
+        Map<String, Float> buckets = new LinkedHashMap<>();
+
+        Calendar cal = Calendar.getInstance();
+        List<String> yearKeys = new ArrayList<>();
+        for (int i = yearsBack - 1; i >= 0; i--) {
+            Calendar year = (Calendar) cal.clone();
+            year.add(Calendar.YEAR, -i);
+            String key = String.valueOf(year.get(Calendar.YEAR));
+            yearKeys.add(key);
+            buckets.put(key, 0f);
+        }
+
+        for (OutputLog log : logs) {
+            String outputYear = log.getOutputDate().length() >= 4
+                    ? log.getOutputDate().substring(0, 4) : "";
+            if (yearKeys.contains(outputYear)) {
+                buckets.put(outputYear, buckets.get(outputYear) + parseOrZero(log.getQuantity()));
+            }
+        }
+        return buckets;
+    }
+
     public static Map<String, Float> getWeeklyTotals(List<OutputLog> logs, int weeksBack) {
         Map<String, Float> buckets = new LinkedHashMap<>();
         SimpleDateFormat iso = new SimpleDateFormat(ISO_FORMAT, Locale.getDefault());
